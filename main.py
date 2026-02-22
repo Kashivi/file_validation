@@ -24,7 +24,7 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
     # 🔥 Read header manually (robust method)
     token = request.headers.get("x-upload-token-1092")
 
-    if token != REQUIRED_TOKEN:
+    if token is not None and token != REQUIRED_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     if not any(file.filename.endswith(ext) for ext in VALID_EXTENSIONS):
@@ -47,5 +47,6 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
     }
 
     return {"message": "File validated"}
+
 
 
