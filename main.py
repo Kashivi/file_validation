@@ -19,34 +19,41 @@ REQUIRED_TOKEN = "lh9qejkamtficrrn"
 
 
 @app.post("/upload")
-async def upload_file(request: Request, file: UploadFile = File(...)):
+async def upload_file(request: Request, file: UploadFile = File(None)):
 
-    # 🔥 Read header manually (robust method)
+    # --- Authentication ---
     token = request.headers.get("x-upload-token-1092")
-
     if token is not None and token != REQUIRED_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+    # --- File existence check ---
+    if file is None:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+
+    # --- Extension check ---
     if not any(file.filename.endswith(ext) for ext in VALID_EXTENSIONS):
         raise HTTPException(status_code=400, detail="Invalid file type")
 
     contents = await file.read()
 
+    # --- Size check ---
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="File too large")
 
-    df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+    # --- CSV Processing ---
+    if file.filename.endswith(".csv"):
+        try:
+            df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid CSV format")
 
-    return {
-        "email": "23f3004276@ds.study.iitm.ac.in",
-        "filename": file.filename,
-        "rows": len(df),
-        "columns": df.columns.tolist(),
-        "totalValue": round(float(df["value"].sum()), 2),
-        "categoryCounts": df["category"].value_counts().to_dict()
-    }
+        return {
+            "email": "23f3004276@ds.study.iitm.ac.in",
+            "filename": file.filename,
+            "rows": len(df),
+            "columns": df.columns.tolist(),
+            "totalValue": round(float(df["value"].sum()), 2),
+            "categoryCounts": df["category"].value_counts().to_dict()
+        }
 
     return {"message": "File validated"}
-
-
-
