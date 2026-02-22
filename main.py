@@ -5,7 +5,6 @@ import io
 
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,24 +20,20 @@ REQUIRED_TOKEN = "lh9qejkamtficrrn"
 @app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
-    x_upload_token_1092: str = Header(None, convert_underscores=False)
+    x_upload_token_1092: str = Header(None, alias="X-Upload-Token-1092")
 ):
 
-    # 1️⃣ Check token
     if x_upload_token_1092 != REQUIRED_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    # 2️⃣ Validate extension
     if not any(file.filename.endswith(ext) for ext in VALID_EXTENSIONS):
         raise HTTPException(status_code=400, detail="Invalid file type")
 
     contents = await file.read()
 
-    # 3️⃣ Validate size
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="File too large")
 
-    # 4️⃣ Process CSV
     if file.filename.endswith(".csv"):
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
@@ -47,10 +42,8 @@ async def upload_file(
             "filename": file.filename,
             "rows": len(df),
             "columns": df.columns.tolist(),
-            "totalValue": float(df["value"].sum()),
+            "totalValue": round(float(df["value"].sum()), 2),
             "categoryCounts": df["category"].value_counts().to_dict()
         }
 
-
     return {"message": "File validated"}
-
