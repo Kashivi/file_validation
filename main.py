@@ -9,6 +9,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
+    allow_credentials=False, 
     allow_headers=["*"],
 )
 
@@ -47,3 +48,4 @@ async def upload_file(
         }
 
     return {"message": "File validated"}
+
