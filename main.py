@@ -9,7 +9,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["POST"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -50,5 +50,6 @@ async def upload_file(
             "totalValue": float(df["value"].sum()),
             "categoryCounts": df["category"].value_counts().to_dict()
         }
+
 
     return {"message": "File validated"}
