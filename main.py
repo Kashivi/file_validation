@@ -21,7 +21,7 @@ REQUIRED_TOKEN = "lh9qejkamtficrrn"
 @app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
-    x_upload_token_1092: str = Header(None)
+    x_upload_token_1092: str = Header(None, convert_underscores=False)
 ):
 
     # 1️⃣ Check token
@@ -53,3 +53,4 @@ async def upload_file(
 
 
     return {"message": "File validated"}
+
